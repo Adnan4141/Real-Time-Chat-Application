@@ -1,5 +1,5 @@
 import axios from "axios";
-import "./app.css";
+import "./App.css";
 import MainRoute from "./routes/MainRoute";
 import { socket, SocketContext } from "./socket/socket";
 import { baseUrl } from "./utils/BaseUrl";
