@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
-import { useSignupMutation } from "../redux-rtk-query/userApiEndpoint";
+import { useSignupMutation } from "../app/redux-rtk-query/userApiEndpoint";
+import uploadPhotoInCloudinary from "../utils/uploadCloudinary";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const Signup = () => {
     password: "",
     photo: null,
   });
+  const [selectedFile,setSelectedFile] = useState(null)
   const [previewImage, setPreviewImage] = useState(null); // For image preview
   const navigate = useNavigate();
   const [signup, { isLoading }] = useSignupMutation();
@@ -22,7 +24,7 @@ const Signup = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData((prev) => ({ ...prev, photo: file }));
+      setSelectedFile(file)
       setPreviewImage(URL.createObjectURL(file)); // Set image preview
     }
   };
@@ -36,16 +38,13 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formDataToSend = new FormData();
-    formDataToSend.append("username", formData.username);
-    formDataToSend.append("email", formData.email);
-    formDataToSend.append("password", formData.password);
-    if (formData.photo) {
-      formDataToSend.append("photo", formData.photo);
-    }
+    if(selectedFile){
+        const uploadPhotoUrl = await uploadPhotoInCloudinary(selectedFile)
+        setFormData(prev=>({ ...prev,photo:uploadPhotoUrl})) 
+      }
 
     try {
-      const { data } = await signup(formDataToSend);
+      const { data } = await signup(formData);
       if (data?.success) {
         toast.success(data.message);
         navigate("/login");

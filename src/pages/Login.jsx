@@ -2,22 +2,20 @@ import { useEffect, useState } from "react";
 import { baseUrl } from "../utils/BaseUrl";
 import { toast, Toaster } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import Cookies from "js-cookie";
+import { useLoginMutation } from "../app/redux-rtk-query/userApiEndpoint";
+import useUserStore from "../app/zustard/userStore";
 const Login = () => {
   // const location = useLocation();
+  const [login,{isLoading,error:apiError}] =  useLoginMutation()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const user = useUserStore(state=>state.user)
   const navigate = useNavigate();
+  const addUserInfo = useUserStore(state=>state.addUserInfo)
   
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,31 +27,27 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true); // Start loading
     try {
-      const response = await fetch(`${baseUrl}/auth/login`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      console.log(data.message, data);
-      if (data.success) {
+      const response =  await login(formData)
+      const data = response.data;
+      if (data?.success) {
         toast.success(data.message);
-        localStorage.setItem("token", data.token);
+        addUserInfo({
+           data:data.data,
+           token:data.token
+        })
         navigate("/dashboard");
-      } else {
-        toast.error(data.message);
+      } else if(data?.message) {
+        toast.error(data?.message);
+    
+      }else{
+        console.log(apiError)
       }
     } catch (error) {
-      console.error("Error logging in:", error);
-      toast.error(error.message || "An error occurred. Please try again.");
-    } finally {
-      setIsLoading(false); // Stop loading
-    }
+      console.log(error)
+      console.error("Error logging in:", error?.message ||  error);
+      toast.error(error?.message || "An error occurred. Please try again.");
+    } 
   };
 
   return (

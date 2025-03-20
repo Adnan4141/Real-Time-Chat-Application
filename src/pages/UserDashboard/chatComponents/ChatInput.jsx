@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import EmojiPicker from "emoji-picker-react"; // Ensure this is installed
 import { toast } from "sonner";
 import uploadPhotoInCloudinary from "../../../utils/uploadCloudinary";
+import { socket } from "../../../socket/socket";
 
 export const ChatInput = ({
   conversationId,
@@ -22,11 +23,11 @@ export const ChatInput = ({
   uploadProgress,
   messagesEndRef,
   setUploadProgress,
+  SendMessageBySocket
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [filePreview, setFilePreview] = useState(null);
-  const [isRecording, setIsRecording] = useState(false);
   const fileInputRef = useRef(null);
   const [newMessage, setNewMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -44,7 +45,7 @@ export const ChatInput = ({
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() && !selectedFile) return;
-
+    let payload ={}  
     try {
       setFilePreview(null);
       if (selectedFile) {
@@ -54,18 +55,26 @@ export const ChatInput = ({
           setUploadProgress
         );
         if (uploadResponse) {
-          await sendMessage({
+          payload = {
             conversationId,
             text: newMessage,
             photo: uploadResponse,
-          });
+          }
           SetIsPhotoUploading(false);
         } else {
           toast.error("Failed to upload photo");
           SetIsPhotoUploading(false);
         }
       } else {
-        await sendMessage({ conversationId, text: newMessage });
+        payload = {
+          conversationId,
+          text: newMessage,
+        }
+      }
+      
+      const response =  await sendMessage(payload);
+      if(response.data.success){
+        SendMessageBySocket(response.data.data)
       }
 
       setNewMessage("");

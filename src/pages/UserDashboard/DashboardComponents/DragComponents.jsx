@@ -1,5 +1,5 @@
 import React from 'react'
-import { useCreateNewConversionsMutation } from '../../../redux-rtk-query/chatApiEndpoint'
+import { useCreateNewConversionsMutation } from '../../../app/redux-rtk-query/chatApiEndpoint'
 import { toast, Toaster } from 'sonner'
 
 const DragComponents = ({user,SetIsOpenSuggestion}) => {

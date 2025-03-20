@@ -6,13 +6,15 @@ export const uploadPhotoInCloudinary = async(file,setUploadProgress) => {
    try {
       const formData = new FormData();
        formData.append("file",file);
-       formData.append("upload_preset", "chat-application");
-       const cloudName = "dagnefiqi"
+       formData.append("upload_preset", import.meta.env.VITE_UPLOAD_PRESET);
+       const cloudName = import.meta.env.VITE_CLOUD_NAME
       const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
       const response = await axios.post(url,formData,
       {
          onUploadProgress: (event) => {
-            setUploadProgress(Math.round((100 * event.loaded) / event.total));
+            if(setUploadProgress){
+               setUploadProgress(Math.round((100 * event.loaded) / event.total));
+            }
          },
        }
    )

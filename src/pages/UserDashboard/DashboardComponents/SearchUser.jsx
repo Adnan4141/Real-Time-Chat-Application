@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchUserQuery } from "../../../redux-rtk-query/userApiEndpoint";
+import { useSearchUserQuery } from "../../../app/redux-rtk-query/userApiEndpoint";
 import { HashLoader } from "react-spinners";
 import DragComponents from "./DragComponents";
 

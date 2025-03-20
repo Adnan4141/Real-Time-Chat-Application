@@ -8,7 +8,7 @@ import {
   useFetchConversionsListQuery,
   useFetchMessagesQuery,
   useMarkMessagesAsSeenMutation,
-} from "../../../redux-rtk-query/chatApiEndpoint";
+} from "../../../app/redux-rtk-query/chatApiEndpoint";
 import { HashLoader } from "react-spinners";
 import MessageSkelleton from "../messageComponents/MessageSkelleton";
 import MessageDropDown from "../messageComponents/MessageDropDown";
@@ -26,6 +26,7 @@ export const ChatMessages = ({
   isPhotoUploading,
   uploadProgress,
   messagesEndRef,
+  setParticipants,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [enlargedPhoto, setEnlargedPhoto] = useState(null); // State for enlarged photo
@@ -34,9 +35,21 @@ export const ChatMessages = ({
   const { data, isLoading, refetch } = useFetchMessagesQuery(conversationId);
   const [deleteMessage] = useDeleteMessageMutation();
   const [markMessagesAsSeen] = useMarkMessagesAsSeenMutation();
- 
-  const socket = useContext(SocketContext)
+  const socket = useContext(SocketContext);
 
+  useEffect(() => {
+    socket.on("received_message", (data) => {
+       console.log("data receiveid",data.receiverId)
+       console.log("user id",user._id)
+      if (data.receiverId.toString() == user._id) {
+         refetch()
+      }
+    });
+
+    return () => {
+      socket.off("received_message");
+    };
+  }, [socket]);
 
   const handleDeleteMessage = async (messageId) => {
     await deleteMessage(messageId);
@@ -47,6 +60,7 @@ export const ChatMessages = ({
   useEffect(() => {
     if (data?.success) {
       setMessage(data?.data?.messages);
+      setParticipants(data.data.participant);
     }
   }, [data, conversationId]);
 
@@ -59,23 +73,23 @@ export const ChatMessages = ({
       markMessagesAsSeen(conversationId);
     }
   }, [messages, user._id, markMessagesAsSeen, refetch]);
- 
 
   useEffect(() => {
-    socket.on("receiver_id", (receiverId) => {
-         console.log("receiverId",receiverId.toString())
-      if (receiverId.toString() === user._id.toString()) {
-        refetch(); 
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }
-    });
-  
+    socket.on(
+      "receiver_id",
+      (receiverId) => {
+        if (receiverId.toString() === user._id.toString()) {
+          refetch();
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+      },
+      [deleteMessage, markMessagesAsSeen]
+    );
+
     return () => {
       socket.off("receive_message");
     };
   }, [user, refetch]);
-  
-
 
   const handlePhotoLoad = (messageId) => {
     setLoadingPhotos((prev) => ({ ...prev, [messageId]: false }));
@@ -90,10 +104,7 @@ export const ChatMessages = ({
 
   return (
     <div className="flex flex-col p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-transparent bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg h-full">
-
-      {messages.length === 0 && (
-           <EmptyMessages/>
-      )}
+      {messages.length === 0 && <EmptyMessages />}
 
       {/* Messages List */}
       {messages.length > 0 &&
@@ -137,9 +148,14 @@ export const ChatMessages = ({
                     >
                       {/* Display Photo if Message Contains One */}
                       {msg.photo && (
-                       <DisplayPhoto 
-                        {...{loadingPhotos,handlePhotoLoad,setEnlargedPhoto,msg}}
-                       />
+                        <DisplayPhoto
+                          {...{
+                            loadingPhotos,
+                            handlePhotoLoad,
+                            setEnlargedPhoto,
+                            msg,
+                          }}
+                        />
                       )}
 
                       {/* Display Text if Message Contains Text */}
@@ -151,9 +167,7 @@ export const ChatMessages = ({
                     </motion.div>
 
                     {/* Timestamp and Seen Indicator */}
-                      <MessageTimeStampsAndSeenIndicator
-                       {...{msg,user}}
-                      />
+                    <MessageTimeStampsAndSeenIndicator {...{ msg, user }} />
                   </div>
 
                   {/* Dropdown Menu (for user's messages) */}
@@ -184,9 +198,7 @@ export const ChatMessages = ({
       {/* Enlarged Photo Modal */}
       <AnimatePresence>
         {enlargedPhoto && (
-         <EnlargePhoto
-         {...{setEnlargedPhoto,enlargedPhoto}}
-         />
+          <EnlargePhoto {...{ setEnlargedPhoto, enlargedPhoto }} />
         )}
       </AnimatePresence>
     </div>

@@ -7,7 +7,8 @@ import { BrowserRouter } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { Toaster } from "sonner";
 import { Provider } from "react-redux";
-import { store } from "./redux-rtk-query/store.jsx";
+import { store } from "./app/redux-rtk-query/store.jsx";
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

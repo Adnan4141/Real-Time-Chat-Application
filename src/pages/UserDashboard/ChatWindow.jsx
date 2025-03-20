@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { ChatHeader } from "./chatComponents/ChatHeader";
 import { ChatInput } from "./chatComponents/ChatInput";
 import { ChatMessages } from "./chatComponents/ChatMessages";
 import {
   useDeleteConversionMutation,
   useSendMessageMutation,
-} from "../../redux-rtk-query/chatApiEndpoint";
+} from "../../app/redux-rtk-query/chatApiEndpoint";
 import { HashLoader } from "react-spinners";
+import {  SocketContext } from "../../socket/socket";
+
 
 const ChatWindow = ({ conversationId,setSelectedConversation, user, OtherUser }) => {
   const [deleteConversion] = useDeleteConversionMutation();
@@ -14,15 +16,21 @@ const ChatWindow = ({ conversationId,setSelectedConversation, user, OtherUser })
   const [isPhotoUploading,SetIsPhotoUploading] = useState();
   const [uploadProgress,setUploadProgress] = useState(0);
   const messagesEndRef = useRef(null);
-
+  const [participants,setParticipants] = useState(); 
+  const socket = useContext(SocketContext)
   const handleDeleteConverions = async () => {
     await deleteConversion(conversationId);
     setSelectedConversation(null)
     // refetch();
   };
+  const SendMessageBySocket = (data)=>{
+    const receiverId = participants?.filter(chatUser=>chatUser!=user._id.toString())[0]
+    socket.emit("send_message",{
+      ...data,
+      receiverId
+    })
+  }
 
- 
- 
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-200 p-4">
       {/* Chat Header */}
@@ -31,6 +39,7 @@ const ChatWindow = ({ conversationId,setSelectedConversation, user, OtherUser })
      <ChatHeader
         handleDeleteConverions={handleDeleteConverions}
         OtherUser={OtherUser}
+        user={user}
       />
 
       {/* Chat Messages */}
@@ -40,8 +49,8 @@ const ChatWindow = ({ conversationId,setSelectedConversation, user, OtherUser })
           uploadProgress={uploadProgress}
           isPhotoUploading={isPhotoUploading}
           conversationId={conversationId}
-          phot
           messagesEndRef={messagesEndRef}
+          setParticipants={setParticipants}
         />
       </div>
 
@@ -50,6 +59,7 @@ const ChatWindow = ({ conversationId,setSelectedConversation, user, OtherUser })
        setUploadProgress={setUploadProgress}
        uploadProgress={uploadProgress}
        sendMessage={sendMessage}
+       SendMessageBySocket={SendMessageBySocket}
        SetIsPhotoUploading={SetIsPhotoUploading}
        isUploading={isUploading}
        sendMessageError={sendMessageError}

@@ -7,13 +7,20 @@ import SearchUser from "../DashboardComponents/SearchUser";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { formatMessageTime } from "../../../utils/formatMessageTime";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { useLogoutMutation } from "../../../app/redux-rtk-query/userApiEndpoint";
+import useUserStore from "../../../app/zustard/userStore";
 
 const Sidebar = ({ isOpenSideMenu,setShowSettings, setIsOpenSideMenu,user,conversations,setSelectedConversation,selectedConversation}) => {
+const removeUserInfo = useUserStore(state=>state.removeUserInfo)
   const navigate = useNavigate()
+  const [logout] = useLogoutMutation();
 
 
- const handleLogout = () => {
-    localStorage.removeItem("token");
+ const handleLogout = async() => {
+   const response =    await  logout().unwrap();
+   toast.success("Logout successfully")
+   removeUserInfo()
     navigate("/login");
   };
 
@@ -59,6 +66,7 @@ const Sidebar = ({ isOpenSideMenu,setShowSettings, setIsOpenSideMenu,user,conver
             />
           )}
         </div>
+        <p className="font-semibold text-center my-2 text-lg">{isOpenSideMenu && user?.username}</p>
 
         {/* Search User */}
         {isOpenSideMenu && (

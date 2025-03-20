@@ -3,23 +3,19 @@ import { BiBlock, BiDotsHorizontalRounded, BiTrashAlt, BiBell, BiMessage } from 
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
-import { socket, SocketContext } from "../../../socket/socket";
+import { SocketContext } from "../../../socket/socket";
 
-export const ChatHeader = ({ OtherUser, handleDeleteConverions }) => {
+export const ChatHeader = ({ OtherUser,user, handleDeleteConverions }) => {
   const socket = useContext(SocketContext);
   const [navDropdown, setNavDropDown] = useState(false);
   const [notificationDropdown, setNotificationDropdown] = useState(false);
   const [activeUsers, setActiveUsers] = useState([]);
   const [viewProfile, setViewProfile] = useState(false); // State to control profile view visibility
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "New message from John", read: false },
-    { id: 2, text: "You have a new friend request", read: true },
-  ]);
-
+  
   
   useEffect(() => {
     const handleActiveUsers = (users) => {
-      setActiveUsers(users); 
+      setActiveUsers(users); // Update the list of active users
         // console.log(users)
         // console.log("other",OtherUser[0])
     };
@@ -32,6 +28,8 @@ export const ChatHeader = ({ OtherUser, handleDeleteConverions }) => {
   }, [socket]);
 
 
+  
+  
 
   
   const handleBlockContact = () => {
@@ -72,56 +70,7 @@ export const ChatHeader = ({ OtherUser, handleDeleteConverions }) => {
       {/* Notification and Settings Dropdown */}
       <div className="flex items-center gap-6">
         {/* Notification Button */}
-        <div className="relative">
-          <button
-            onClick={() => setNotificationDropdown(!notificationDropdown)}
-            className="text-white text-2xl cursor-pointer hover:text-teal-300 transition duration-200 ease-in-out relative"
-          >
-            <BiBell />
-            {notifications.some((notification) => !notification.read) && (
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            )}
-          </button>
-
-          {/* Notification Dropdown */}
-          {notificationDropdown && (
-            <div className="bg-white absolute z-20 right-0 rounded-lg mt-2 shadow-xl w-64 overflow-hidden animate__animated animate__fadeIn animate__faster">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
-              </div>
-              <ul className="max-h-60 overflow-y-auto">
-                {notifications.length > 0 ? (
-                  notifications.map((notification) => (
-                    <li
-                      key={notification.id}
-                      className={`py-3 px-4 flex justify-between items-center text-gray-700 cursor-pointer hover:bg-gray-100 transition duration-200 ease-in-out ${
-                        notification.read ? "opacity-75" : "bg-gray-50"
-                      }`}
-                      onClick={() => markNotificationAsRead(notification.id)}
-                    >
-                      <span className="text-sm">{notification.text}</span>
-                      {!notification.read && (
-                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                      )}
-                    </li>
-                  ))
-                ) : (
-                  <li className="py-3 px-4 text-sm text-gray-500">No new notifications</li>
-                )}
-              </ul>
-              {notifications.length > 0 && (
-                <div className="p-2 border-t border-gray-200">
-                  <button
-                    onClick={clearAllNotifications}
-                    className="w-full text-sm text-red-600 hover:text-red-800 font-medium"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+      
 
         {/* Settings Dropdown */}
         <div className="relative">

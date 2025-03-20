@@ -1,11 +1,15 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { baseUrl } from "../utils/BaseUrl";
+import { baseUrl } from "../../utils/BaseUrl";
+import Cookies from "js-cookie";
+
 export const chatApi = createApi({
   reducerPath: "chatApi",
   baseQuery: fetchBaseQuery({
     baseUrl: baseUrl,
     prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
+      const token = Cookies.get("token") || localStorage.getItem("token");
+      ;
+      console.log()
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
