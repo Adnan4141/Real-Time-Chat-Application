@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { useUpdateProfileMutation } from "../../../app/redux-rtk-query/userApiEndpoint";
 import uploadPhotoInCloudinary from "../../../utils/uploadCloudinary";
+import { toast } from "sonner";
 
 const SettingModal = ({user, showSettings, setShowSettings }) => {
   const [updateProfile] = useUpdateProfileMutation();
@@ -58,14 +59,14 @@ const SettingModal = ({user, showSettings, setShowSettings }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0  bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={() => setShowSettings(false)} // Close on outside click
         >
           <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
-            className="bg-white rounded-lg shadow-2xl w-96 p-6"
+            className="bg-white mx-5 md:m-0 rounded-lg shadow-2xl w-96 p-6"
             onClick={(e) => e.stopPropagation()} // Prevent closing on inside click
           >
             {/* Modal Header */}
@@ -99,7 +100,6 @@ const SettingModal = ({user, showSettings, setShowSettings }) => {
                     defaultValue={user?.username}
                     onChange={handleOnChange}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    required
                   />
                 </div>
                 <div>
@@ -115,7 +115,7 @@ const SettingModal = ({user, showSettings, setShowSettings }) => {
                     value={formData.password}
                     onChange={handleOnChange}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    required
+              
                   />
                 </div>
 

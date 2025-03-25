@@ -10,7 +10,7 @@ const SearchUser = () => {
   const { data, isLoading, error } = useSearchUserQuery(query);
   const users = data?.success ? data.data : [];
 
-  const suggestionsRef = useRef(null); // Ref for the suggestions box
+  const suggestionsRef = useRef(null); 
 
   // Handle input changes
   const handleOnChange = (e) => {
@@ -56,7 +56,7 @@ const SearchUser = () => {
                 onMouseOver={() => setDragId(user._id)}
                 className="flex relative hover:bg-slate-400 cursor-pointer p-2 shadow gap-2 items-center"
               >
-                <img className="w-10 h-10 rounded-full" src={user?.photo} alt="" />
+                <img className="w-10 h-10 rounded-full relative" src={user?.photo} alt="" />
                 <h2>{user?.username}</h2>
                 {dragId === user._id && <DragComponents SetIsOpenSuggestion={SetIsOpenSuggestion} user={user} />}
               </li>

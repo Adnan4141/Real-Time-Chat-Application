@@ -10,7 +10,7 @@ import { HashLoader } from "react-spinners";
 import {  SocketContext } from "../../socket/socket";
 
 
-const ChatWindow = ({ conversationId,setSelectedConversation, user, OtherUser }) => {
+const ChatWindow = ({ conversationId,activeUsers,setSelectedConversation, user, OtherUser }) => {
   const [deleteConversion] = useDeleteConversionMutation();
   const [sendMessage,{isLoading:isUploading,error:sendMessageError}] = useSendMessageMutation();
   const [isPhotoUploading,SetIsPhotoUploading] = useState();
@@ -32,13 +32,14 @@ const ChatWindow = ({ conversationId,setSelectedConversation, user, OtherUser })
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-200 p-4">
+    <div className="flex flex-col h-full bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-200 ">
       {/* Chat Header */}
 
 
      <ChatHeader
         handleDeleteConverions={handleDeleteConverions}
         OtherUser={OtherUser}
+        activeUsers={activeUsers}
         user={user}
       />
 

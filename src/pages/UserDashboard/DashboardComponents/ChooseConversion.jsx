@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 const ChooseConversion = () => {
   return (
-   <div className="flex items-center justify-center h-full bg-gradient-to-r from-purple-50 to-indigo-50">
+   <div className="flex px-5 items-center justify-center h-full bg-gradient-to-r from-purple-50 to-indigo-50">
    <motion.div
      initial={{ opacity: 0, y: 20 }}
      animate={{ opacity: 1, y: 0 }}
@@ -26,16 +26,7 @@ const ChooseConversion = () => {
        begin chatting.
      </p>
 
-     {/* Call-to-Action Button */}
-     <button
-       onClick={() => {
-         // Add functionality to start a new conversation
-         toast.info("Start a new conversation feature coming soon!");
-       }}
-       className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all"
-     >
-       Start New Chat
-     </button>
+
    </motion.div>
  </div>
   )

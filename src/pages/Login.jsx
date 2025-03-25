@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { baseUrl } from "../utils/BaseUrl";
 import { toast, Toaster } from "sonner";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useLoginMutation } from "../app/redux-rtk-query/userApiEndpoint";
 import useUserStore from "../app/zustard/userStore";
@@ -51,7 +51,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-900 animate-gradient">
+    <div className="min-h-screen px-5 md:px-2 flex items-center justify-center bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-900 animate-gradient">
       <Toaster richColors position="top-center" />
       <div className="w-full max-w-md p-8 bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 transform transition-all duration-500 hover:scale-105 hover:shadow-3xl">
         <h2 className="text-4xl font-bold text-center text-white mb-8 animate-fade-in">
@@ -108,9 +108,9 @@ const Login = () => {
 
         <p className="mt-6 text-center text-sm text-white/80 animate-fade-in delay-300">
           Don't have an account?{" "}
-          <a href="/register" className="text-purple-400 hover:text-purple-300 font-semibold">
+          <Link to={"/register"} className="text-purple-400 hover:text-purple-300 font-semibold">
             Register here
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -21,7 +21,7 @@ const DragComponents = ({user,SetIsOpenSuggestion}) => {
 
 
   return (
-   <div className="absolute px-4 py-5  -right-72 -top-5 w-72 bg-white p-2 rounded shadow-md ">
+   <div className="absolute px-4 py-5  top-14 left-10 md:-right-72 md:-top-5 w-72 bg-white p-2 rounded shadow-md ">
    <Toaster/>
    <div className="flex justify-between items-center p-3">
      <img

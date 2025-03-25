@@ -1,29 +1,22 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  FiSend,
-  FiImage,
-  FiSmile,
-  FiMic,
-  FiPaperclip,
-  FiType,
-} from "react-icons/fi";
+import { useRef, useState } from "react";
+import { FiSend, FiImage, FiSmile } from "react-icons/fi";
 import { motion } from "framer-motion";
-import EmojiPicker from "emoji-picker-react"; // Ensure this is installed
+import EmojiPicker from "emoji-picker-react";
 import { toast } from "sonner";
 import uploadPhotoInCloudinary from "../../../utils/uploadCloudinary";
-import { socket } from "../../../socket/socket";
+import receiveMsgTone from "/tone.mp3";
+import SendMsgTone from "/sendMsg1.mp3";
 
 export const ChatInput = ({
   conversationId,
   isUploading,
   sendMessage,
-  sendMessageError,
   SetIsPhotoUploading,
   isPhotoUploading,
   uploadProgress,
   messagesEndRef,
   setUploadProgress,
-  SendMessageBySocket
+  SendMessageBySocket,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -45,7 +38,7 @@ export const ChatInput = ({
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() && !selectedFile) return;
-    let payload ={}  
+    let payload = {};
     try {
       setFilePreview(null);
       if (selectedFile) {
@@ -59,7 +52,7 @@ export const ChatInput = ({
             conversationId,
             text: newMessage,
             photo: uploadResponse,
-          }
+          };
           SetIsPhotoUploading(false);
         } else {
           toast.error("Failed to upload photo");
@@ -69,12 +62,12 @@ export const ChatInput = ({
         payload = {
           conversationId,
           text: newMessage,
-        }
+        };
       }
-      
-      const response =  await sendMessage(payload);
-      if(response.data.success){
-        SendMessageBySocket(response.data.data)
+
+      const response = await sendMessage(payload);
+      if (response.data.success) {
+        SendMessageBySocket(response.data.data);
       }
 
       setNewMessage("");
@@ -112,22 +105,6 @@ export const ChatInput = ({
     fileInputRef.current.value = "";
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFilePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   // Play send sound effect
   const playSendSound = () => {
     if (sendSoundRef.current) {
@@ -136,69 +113,17 @@ export const ChatInput = ({
     }
   };
 
-  // Play receive sound effect
-  const playReceiveSound = () => {
-    if (receiveSoundRef.current) {
-      receiveSoundRef.current.currentTime = 0; // Reset audio to start
-      receiveSoundRef.current.play();
-    }
-  };
-
   return (
-    <div className="p-4 pb-10 pt-10 h-[20vh] border-t border-gray-200 bg-white">
+    <div className="p-4 pb-10 pt-10 border-t border-gray-200 bg-white">
       {/* Audio elements for sound effects */}
-      <audio ref={sendSoundRef} src="/public/sendMsg1.mp3" preload="auto" />
-      <audio ref={receiveSoundRef} src="/public/tone.mp3" preload="auto" />
+      <audio ref={sendSoundRef} src={SendMsgTone} preload="auto" />
+      <audio ref={receiveSoundRef} src={receiveMsgTone} preload="auto" />
 
-      <div className="flex items-center gap-3 max-w-2xl mx-auto">
-        {/* Emoji Picker */}
-        {showEmojiPicker && (
-          <div className="absolute bottom-20 right-4 z-50">
-            <EmojiPicker
-              onEmojiClick={handleEmojiClick} // Use the correct handler
-            />
-          </div>
-        )}
-
-        {/* File Preview */}
-        {filePreview && (
-          <div className="absolute bottom-20 left-4 z-50 bg-white p-2 rounded-lg shadow-lg">
-            <img
-              src={filePreview}
-              alt="File Preview"
-              className="w-20 h-20 object-cover rounded"
-            />
-            <button
-              onClick={handleRemoveFile}
-              className="mt-2 text-sm text-red-500 hover:text-red-700"
-            >
-              Remove
-            </button>
-          </div>
-        )}
-
-        {/* Photo Upload Button */}
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="bg-gray-100 text-gray-600 h-12 w-12 rounded-xl flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200"
-          onClick={() => fileInputRef.current.click()}
-          disabled={isUploading}
-        >
-          <FiImage className="text-xl" />
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileUpload}
-            accept="image/*"
-            disabled={isUploading}
-          />
-        </motion.button>
-
-        {/* Input Field */}
+      {/* Input Field and Buttons */}
+      <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-2xl mx-auto">
+        {/* Text Input Field */}
         <motion.div
-          className="flex-1 relative"
+          className="flex-1 relative w-full"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -219,31 +144,77 @@ export const ChatInput = ({
           />
         </motion.div>
 
-        {/* Emoji Button */}
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className={`bg-gray-100 text-gray-600 h-12 w-12 rounded-xl flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200 ${
-            isUploading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          disabled={isUploading}
-        >
-          <FiSmile className="text-xl" />
-        </motion.button>
+        {/* Buttons */}
+        <div className="flex items-center gap-3">
+          {/* Emoji Picker */}
+          {showEmojiPicker && (
+            <div className="absolute bottom-20 right-4 z-50">
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </div>
+          )}
 
-        {/* Send Button */}
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className={`bg-gradient-to-r from-purple-500 to-indigo-500 text-white h-12 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 ${
-            isUploading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          onClick={handleSendMessage}
-          disabled={isUploading}
-        >
-          <FiSend className="text-xl" />
-        </motion.button>
+          {/* File Preview */}
+          {filePreview && (
+            <div className="absolute bottom-20 left-4 z-50 bg-white p-2 rounded-lg shadow-lg">
+              <img
+                src={filePreview}
+                alt="File Preview"
+                className="w-20 h-20 object-cover rounded"
+              />
+              <button
+                onClick={handleRemoveFile}
+                className="mt-2 text-sm text-red-500 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+
+          {/* Photo Upload Button */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="bg-gray-100 text-gray-600 h-12 w-12 rounded-xl flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200"
+            onClick={() => fileInputRef.current.click()}
+            disabled={isUploading}
+          >
+            <FiImage className="text-xl" />
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileUpload}
+              accept="image/*"
+              disabled={isUploading}
+            />
+          </motion.button>
+
+          {/* Emoji Button */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className={`bg-gray-100 text-gray-600 h-12 w-12 rounded-xl flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200 ${
+              isUploading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            disabled={isUploading}
+          >
+            <FiSmile className="text-xl" />
+          </motion.button>
+
+          {/* Send Button */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className={`bg-gradient-to-r from-purple-500 to-indigo-500 text-white h-12 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 ${
+              isUploading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handleSendMessage}
+            disabled={isUploading}
+          >
+            <FiSend className="text-xl" />
+          </motion.button>
+        </div>
       </div>
 
       {/* Upload Progress Bar */}

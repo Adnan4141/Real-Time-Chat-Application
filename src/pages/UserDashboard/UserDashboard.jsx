@@ -1,22 +1,9 @@
-import {
-  AiOutlineClose,
-  AiOutlineLogout,
-  AiOutlineSetting,
-} from "react-icons/ai";
-import { GiHamburgerMenu } from "react-icons/gi";
 import { useState, useEffect, useContext } from "react";
 import ChatWindow from "./ChatWindow";
-import { baseUrl } from "../../utils/BaseUrl";
 import { useNavigate } from "react-router-dom";
 import { useFetchConversionsListQuery } from "../../app/redux-rtk-query/chatApiEndpoint";
 import { HashLoader } from "react-spinners";
-import { useSearchUserQuery } from "../../app/redux-rtk-query/userApiEndpoint";
-import SearchUser from "./DashboardComponents/SearchUser";
-import { formatMessageTime } from "../../utils/formatMessageTime";
-import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { RiChatSmile2Line } from "react-icons/ri";
-import { SocketContext } from "../../socket/socket";
+import { SocketContext, useSocket } from "../../socket/socket";
 import Sidebar from "./sidebarComponent/Sidebar";
 import SettingModal from "./sidebarComponent/SettingModal";
 import useUserStore from "../../app/zustard/userStore";
@@ -27,44 +14,30 @@ const UserDashboard = () => {
   const [conversations, setConversations] = useState([]);
   const [isOpenSideMenu, setIsOpenSideMenu] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState(null);
-  const user = useUserStore(state=>state.user)
+  const user = useUserStore((state) => state.user);
   const [showSettings, setShowSettings] = useState(false);
-
   const { data, isLoading, error, refetch } = useFetchConversionsListQuery();
   const navigate = useNavigate();
-  const socket = useContext(SocketContext);
   const [activeUsers, setActiveUsers] = useState([]);
+  const socket = useSocket();
 
   const OtherUser = conversations?.filter(
     (item) => item._id === selectedConversation
   );
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 640) {
-        setIsOpenSideMenu(true);
-      } else {
-        setIsOpenSideMenu(false);
-      }
+    if (!socket) return;
+    const handleOnlineUsers = (data) => {
+      setActiveUsers(data);
     };
 
-    window.addEventListener("resize", handleResize);
-    handleResize();
+    socket.on("getOnlineUsers", handleOnlineUsers);
 
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    const handleActiveUsers = (users) => {
-      setActiveUsers(users); 
-    };
-    socket.on("active_users", handleActiveUsers);
     return () => {
-      socket.off("active_users", handleActiveUsers); 
+      socket.off("getOnlineUsers", handleOnlineUsers);
     };
-  }, [socket]);
 
-  
+  }, [user?._id,socket]);
 
   useEffect(() => {
     if (!isLoading && data) {
@@ -72,8 +45,11 @@ const UserDashboard = () => {
     }
   }, [data, isLoading]);
 
+
+
   useEffect(() => {
-    if (!user) return; 
+    if (!user || !socket) return;
+  
     const handleReceiverId = (receiverId) => {
       if (receiverId.toString() == user?._id.toString()) {
          refetch()
@@ -86,15 +62,12 @@ const UserDashboard = () => {
     };
   }, [socket, user])
 
+
   useEffect(() => {
     if (!isLoading && data) {
       setConversations(data.data);
-      if (data.user?._id) {
-        socket.emit("user_login", data.user._id);
-      }
     }
-
-  }, [data, isLoading,socket]);
+  }, [data, isLoading, socket]);
 
   if (isLoading) {
     return (
@@ -104,8 +77,6 @@ const UserDashboard = () => {
     );
   }
 
-
-
   return (
     <div className="flex h-screen w-full bg-gradient-to-r from-purple-50 to-indigo-50">
       {/* Sidebar */}
@@ -113,6 +84,7 @@ const UserDashboard = () => {
       <Sidebar
         {...{
           isOpenSideMenu,
+          activeUsers,
           setSelectedConversation,
           setShowSettings,
           setIsOpenSideMenu,
@@ -121,33 +93,24 @@ const UserDashboard = () => {
           selectedConversation,
         }}
       />
-  
 
       {/* Chat Window */}
-      <div className="flex-1 bg-white rounded-l-lg shadow-lg overflow-hidden">
-        {!error && !isLoading && 
-        selectedConversation && (
+      <div className="flex-1 ml-12 md:ml-0 bg-white rounded-l-lg shadow-lg overflow-hidden">
+        {!error && !isLoading && selectedConversation && (
           <ChatWindow
             user={user}
             OtherUser={OtherUser}
+            activeUsers={activeUsers}
             setSelectedConversation={setSelectedConversation}
             conversationId={selectedConversation}
           />
-        ) }
+        )}
 
-        {!error && !isLoading && 
-        !selectedConversation && (
-          <ChooseConversion/>
-        ) }
-        
+        {!error && !isLoading && !selectedConversation && <ChooseConversion />}
 
-           {/* Error component*/}
-      { error && !isLoading && 
-      <FetchError refetch={refetch} error={error}/>
-      }
+        {/* Error component*/}
+        {error && !isLoading && <FetchError refetch={refetch} error={error} />}
       </div>
-
-   
 
       {/* Settings Modal */}
       <SettingModal {...{ user, showSettings, setShowSettings }} />

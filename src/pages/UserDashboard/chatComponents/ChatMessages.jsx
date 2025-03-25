@@ -18,6 +18,7 @@ import EmptyMessages from "../messageComponents/EmptyMessages";
 import EnlargePhoto from "../messageComponents/EnlargePhoto";
 import DisplayPhoto from "../messageComponents/DisplayPhoto";
 import { SocketContext } from "../../../socket/socket";
+import receiveMsgTone from "/tone.mp3"
 
 export const ChatMessages = ({
   user,
@@ -36,13 +37,26 @@ export const ChatMessages = ({
   const [deleteMessage] = useDeleteMessageMutation();
   const [markMessagesAsSeen] = useMarkMessagesAsSeenMutation();
   const socket = useContext(SocketContext);
+  const sendSoundRef = useRef(null);
+  const receiveSoundRef = useRef(null);
+  
 
-  useEffect(() => {
-    socket.on("received_message", (data) => {
-       console.log("data receiveid",data.receiverId)
-       console.log("user id",user._id)
-      if (data.receiverId.toString() == user._id) {
-         refetch()
+  const playSendSound = () => {
+    if (receiveSoundRef) {
+      receiveSoundRef.current.currentTime = 0; 
+      receiveSoundRef.current.play();
+    }
+  };
+
+
+
+
+
+  useEffect( () => {
+    socket.on("received_message", async(data) => {
+      if (data.receiverId.toString() == user._id.toString()) {
+        playSendSound() 
+         await refetch()
       }
     });
 
@@ -81,6 +95,7 @@ export const ChatMessages = ({
         if (receiverId.toString() === user._id.toString()) {
           refetch();
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          
         }
       },
       [deleteMessage, markMessagesAsSeen]
@@ -91,6 +106,11 @@ export const ChatMessages = ({
     };
   }, [user, refetch]);
 
+
+
+
+
+  
   const handlePhotoLoad = (messageId) => {
     setLoadingPhotos((prev) => ({ ...prev, [messageId]: false }));
   };
@@ -105,7 +125,7 @@ export const ChatMessages = ({
   return (
     <div className="flex flex-col p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-transparent bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg h-full">
       {messages.length === 0 && <EmptyMessages />}
-
+        <audio ref={receiveSoundRef} src={receiveMsgTone } preload="auto" />
       {/* Messages List */}
       {messages.length > 0 &&
         [...messages]
